@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.dirty.init"
+    android:versionCode="100"
+    android:versionName="1.00">
+
+    <!-- INTERNET: only permission required for the exploit chain (IpSecManager + UDP loopback) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Storage: extract dirtyinit CLI binary to shared storage -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!-- Android 11+ scoped storage bypass for CLI extraction -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+    <!-- Android 13+ granular media permissions (needed for storage access on API 33+) -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+
+    <uses-sdk
+        android:minSdkVersion="28"
+        android:targetSdkVersion="34" />
+
+    <application
+        android:theme="@android:style/Theme.Material.NoActionBar"
+        android:label="DirtyInit"
+        android:extractNativeLibs="true">
+
+        <activity
+            android:name="com.dirty.init.DirtyInitActivity"
+            android:exported="true"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
